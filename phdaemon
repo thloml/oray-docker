@@ -1,0 +1,16 @@
+#!/bin/bash
+PHTUNNEL="/usr/bin/phtunnel -d -l /var/log/phddns/phtunnel.log -c /etc/phtunnel.json -r -i 11429 -k adf9fb5a1ad438b9 -e client-ua:HSKEMD/5.0.0/Ubuntu/20050500;vendor:Oray"
+
+checkpid(){
+	PID=`pidof phtunnel`
+
+	if [ -z "$PID" ]; then
+                $PHTUNNEL > /dev/null 2>&1 
+	fi
+}
+
+while true
+	do 
+	checkpid
+	sleep 3
+	done
