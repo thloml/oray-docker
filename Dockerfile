@@ -4,7 +4,7 @@ ENV ORAY_HOME /data
 RUN mkdir -p ${ORAY_HOME}
 
 RUN mkdir -p /tmp/
-add phddns_3.0_x86_64.deb /tmp/pddns.deb
+add phddns-5.0.0-amd64.deb /tmp/pddns.deb
 RUN dpkg -i /tmp/pddns.deb && rm /tmp/pddns.deb
 
 
