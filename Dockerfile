@@ -2,16 +2,11 @@ FROM ubuntu:16.04
 
 ENV ORAY_HOME /data
 RUN mkdir -p ${ORAY_HOME}
+WORKDIR ${ORAY_HOME}
+add phddns_5_1_amd64.deb ./ 
+add phdaemon ./
+RUN chmod +x ./phdaemon 
+ENTRYPOINT ./phdaemon
 
-add phdaemon /usr/bin/
-add phddns /usr/bin/
-add phtunnel /usr/bin/
+EXPOSE 11011
 
-RUN ["chmod", "+x", "/usr/bin/phtunnel"]
-RUN apt-get update && apt-get install -y supervisor wget
-ADD supervisord.conf /supervisord.conf
-COPY /supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-EXPOSE 16062
-
-CMD ["/usr/bin/supervisord"]

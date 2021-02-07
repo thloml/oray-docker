@@ -1,16 +1,88 @@
 #!/bin/bash
-PHTUNNEL="/usr/bin/phtunnel -d -l /var/log/phddns/phtunnel.log -c /etc/phtunnel.json -r -i 11429 -k adf9fb5a1ad438b9 -e client-ua:HSKEMD/5.0.0/Ubuntu/20050500;vendor:Oray"
 
-checkpid(){
-	PID=`pidof phtunnel`
+phtunnel_bin_path='/usr/bin/phtunnel'
+mini_httpd_bin_path='/usr/bin/phddns_mini_httpd'
+mini_httpd_port_start=11011 
+mini_httpd_port=$mini_httpd_port_start
 
-	if [ -z "$PID" ]; then
-                $PHTUNNEL > /dev/null 2>&1 
-	fi
+#日志
+log()
+{
+	echo $@
+	logger -t phtunnel "$@"
+}
+
+#检查web服务(minihttpd)
+check_mini_httpd()
+{
+	local mini_httpd_pid
+	mini_httpd_pid=$(pidof phddns_mini_httpd)
+
+	#进程已存在
+	[ -n "$mini_httpd_pid" ] && return 0
+
+	#程序文件是否存在
+	[ -x $mini_httpd_bin_path ] || {
+		log "$mini_httpd_bin_path is not exist"
+		return 1
+	}
+
+	mini_httpd_port=$mini_httpd_port_start
+	$mini_httpd_bin_path -p $mini_httpd_port -h 127.0.0.1 -d /usr/share/phtunnel/www -c phtunnel_control/* -s -u root
+
+	#执行，如果失败，则可能是端口已经使用，然后换个端口再尝试
+	#
+	#while ! $mini_httpd_bin_path -p $mini_httpd_port -h 127.0.0.1 -c cgi/* -s
+	#do
+	#	log "can not start $mini_httpd_bin_path, listen port = $mini_httpd_port"
+	#
+	#	let mini_httpd_port+=1 #端口号加1再尝试下一个
+	#	[ $mini_httpd_port -gt 65535 ] && mini_httpd_port=$mini_httpd_port_start #端口号大于65535也是非法端口，再从头开始尝试
+	#
+	#	sleep 1
+	#done
+}
+
+#检查phtunnel
+check_phtunnel()
+{
+	local phtunnel_pid
+	phtunnel_pid=$(pidof phtunnel)
+
+	#systemd情况下不用守护phtunnel
+	grep systemd /proc/1/cmdline && return 0
+
+	#进程已存在
+	[ -n "$phtunnel_pid" ] && return 0
+
+	#程序是否存在
+	[ -x $phtunnel_bin_path ] || {
+		log "$phtunnel_bin_path is not exist"
+		return 0
+	}
+
+	#执行
+	$phtunnel_bin_path -d -l /var/log/phddns/phtunnel.log \
+		-c /etc/phtunnel.json -r -i 11429 -k adf9fb5a1ad438b9 \
+		-e "client-ua:HSKEMD/5.1.0/Ubuntu/20050501;vendor:Oray" \
+		-f 127.0.0.1:$mini_httpd_port &> /dev/null
+}
+
+#检查程序是否已经安装
+check_program()
+{
+  if [ -x $phtunnel_bin_path ]; then 
+     check_mini_httpd
+     check_phtunnel
+  else
+     log "init phtunnel" 
+     apt-get update && apt-get install -y wget curl net-tools && wget https://down.oray.com/hsk/linux/phddns_5_1_amd64.deb && dpkg -i phddns_5_1_amd64.deb
+  fi 
 }
 
 while true
-	do 
-	checkpid
-	sleep 3
-	done
+do 
+        check_program
+	sleep 10
+done
+
