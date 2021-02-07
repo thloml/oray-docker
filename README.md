@@ -1,5 +1,6 @@
 # oray-docker
 花生壳5.1 docker启动版本
+使用--mac-address参数指定mac地址可生成不同的SN
 - 5.0.0版本：
 
 - -  运行 `` docker run -dit --name oray --restart=always  thloml/oray_ddns:5.0.0``
