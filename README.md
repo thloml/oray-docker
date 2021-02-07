@@ -5,9 +5,12 @@
 
 - -  运行 `` docker run -dit --name oray --restart=always  thloml/oray_ddns:5.0.0``
 -  - 使用 ``docker exec oray phddns status``查看状态
--  - 获取到sn后，在花生壳控制台-> 花生壳-> 账号列表-> 添加设备 页面添加sn
+-  - 获取到sn后，使用sn和默认密码admin登录b.oray.com，再绑定花生壳子账号
 
 - 5.1 版本
 - -  运行 `` docker run -dit --name oray --restart=always  thloml/oray_ddns:5.1``
 -  - 使用 ``docker exec oray phddns status``查看状态
--  - 获取到sn后，在花生壳控制台-> 花生壳-> 账号列表-> 添加设备 页面添加sn
+-  - 获取到sn后，使用sn和默认密码admin登录b.oray.com，再绑定花生壳子账号
+
+
+> 若使用默认密码无法登录，则该账户可能被绑定过，需要为容器指定新mac地址生成新的sn
